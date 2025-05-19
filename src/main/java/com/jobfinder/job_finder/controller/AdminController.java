@@ -19,9 +19,23 @@ public class AdminController {
 
     // Lay tat ca cac tin
     @GetMapping("/jobs/all")
-    public ResponseEntity<List<JobPostingDTO>> getJobPostings() {
-        List<JobPostingDTO> jobPostings = jobPostingService.getAllJobPostings();
-        return ResponseEntity.ok(jobPostings);
+    public ResponseEntity<ApiResponse<?>> getJobPostings() {
+        try {
+            List<JobPostingDTO> jobPostings = jobPostingService.getAllJobPostings();
+
+            if (jobPostings == null || jobPostings.isEmpty()) {
+                // Nếu không có tin tuyển dụng, trả về lỗi 404
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(404, "No job postings found", null));
+            }
+
+            // Trả về phản hồi thành công
+            return ResponseEntity.ok(new ApiResponse<>(200, "All job postings fetched successfully", jobPostings));
+        } catch (Exception e) {
+            // Xử lý ngoại lệ nếu có lỗi xảy ra
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "An error occurred while fetching job postings: " + e.getMessage(), null));
+        }
     }
 
     @PutMapping("/jobs/approve/{jobId}")

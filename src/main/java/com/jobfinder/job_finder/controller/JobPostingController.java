@@ -37,6 +37,14 @@ public class JobPostingController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse<>(400, "The deadline cannot be in the past.", null));
             }
+            if(jobPosting.getShift().getStartTime().isBefore(jobPosting.getDeadLine())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "The startTime shift cannot before deadline", null));
+            }
+            if(jobPosting.getShift().getStartTime().isAfter(jobPosting.getShift().getEndTime())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(400, "The endTime cannot before startTime", null));
+            }
 
             // Tìm kiếm nhà tuyển dụng
             Recruiter recruiter = recruiterService.getRecruiterById(recruiterId);

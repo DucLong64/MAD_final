@@ -44,9 +44,31 @@ public class RecruiterController {
     @GetMapping("/home")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getHomeData(
             @RequestParam Long recruiterId,
-            @RequestParam(required = false) Integer month // 1-12
+            @RequestParam(required = false) String date // định dạng "YYYY-MM"
     ) {
-        Map<String, Object> data = jobPostingService.getHomeData(recruiterId, month);
+        Integer year = null;
+        Integer month = null;
+        if (date != null && date.matches("\\d{4}-\\d{2}")) {
+            year = Integer.parseInt(date.substring(0, 4));
+            month = Integer.parseInt(date.substring(5, 7));
+        }
+
+        Map<String, Object> data = jobPostingService.getHomeData(recruiterId, year, month);
+        ApiResponse<Map<String, Object>> response = new ApiResponse<>(200, "Success", data);
+        return ResponseEntity.ok(response);
+    }
+    //Lây giao dien theo doi ứng viên và công việc
+    @GetMapping("/candidates/view")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCandidates(
+            @RequestParam Long recruiterId,@RequestParam(required = false) String date)
+    {
+        Integer year = null;
+        Integer month = null;
+        if (date != null && date.matches("\\d{4}-\\d{2}")) {
+            year = Integer.parseInt(date.substring(0, 4));
+            month = Integer.parseInt(date.substring(5, 7));
+        }
+        Map<String, Object> data = jobPostingService.getCandidatesView(recruiterId, year, month);
         ApiResponse<Map<String, Object>> response = new ApiResponse<>(200, "Success", data);
         return ResponseEntity.ok(response);
     }
