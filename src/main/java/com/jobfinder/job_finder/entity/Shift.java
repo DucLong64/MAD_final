@@ -1,10 +1,15 @@
 package com.jobfinder.job_finder.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
 public class Shift {
     @Id
@@ -22,51 +27,4 @@ public class Shift {
     @OneToMany(mappedBy = "shift")
     private List<ShiftJobSeeker> shiftJobSeekers;  // Mối quan hệ với bảng trung gian
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-    }
-
-    public JobPosting getJobPosting() {
-        return jobPosting;
-    }
-
-    public void setJobPosting(JobPosting jobPosting) {
-        this.jobPosting = jobPosting;
-    }
-
-    public List<ShiftJobSeeker> getShiftJobSeekers() {
-        return shiftJobSeekers;
-    }
-
-    public void setShiftJobSeekers(List<ShiftJobSeeker> shiftJobSeekers) {
-        this.shiftJobSeekers = shiftJobSeekers;
-    }
 }

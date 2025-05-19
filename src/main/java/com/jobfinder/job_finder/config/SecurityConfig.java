@@ -25,7 +25,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private String[] WHITE_LIST = {"/auth/**","applications/**","/recruiter/**","/seeker/**","/admin/**"};
+    private String[] WHITE_LIST = {"/auth/**","applications/**","/recruiter/**","/seeker/**","/admin/**","/api/**"};
 
 
     @Bean

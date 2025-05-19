@@ -2,16 +2,21 @@ package com.jobfinder.job_finder.service;
 
 import com.jobfinder.job_finder.converter.JobPostingDTOConverter;
 import com.jobfinder.job_finder.dto.JobPostingDTO;
+import com.jobfinder.job_finder.entity.Application;
 import com.jobfinder.job_finder.entity.JobPosting;
 import com.jobfinder.job_finder.entity.Shift;
+import com.jobfinder.job_finder.repository.ApplicationRepository;
 import com.jobfinder.job_finder.repository.JobPostingRepository;
 import com.jobfinder.job_finder.repository.ShiftRepository;
+import com.jobfinder.job_finder.util.ApplicationStatus;
 import com.jobfinder.job_finder.util.JobStatus;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +30,8 @@ public class JobPostingService {
     private JobPostingDTOConverter jobPostingDTOConverter;
     @Autowired
     private ShiftService shiftService;
+    @Autowired
+    private ApplicationRepository applicationRepository;
     @Autowired
     private ModelMapper modelMapper;
 
@@ -108,6 +115,42 @@ public class JobPostingService {
             jobPostingRepository.save(jobPosting);
         }
     }
+    // Chuyển từ Open sang Work khi hết deadline
+    @Transactional
+    public void startWorkForJob(){
+        List<JobPosting> openJobs = jobPostingRepository.findByStatus(JobStatus.OPEN);
+        LocalDateTime now = LocalDateTime.now();
+        for(JobPosting jobPosting : openJobs) {
+            if (jobPosting.getDeadLine()!= null && now.isAfter(jobPosting.getDeadLine())) {
+                jobPosting.setStatus(JobStatus.WORKING);
+                jobPostingRepository.save(jobPosting);
+            }
+        }
+    }
+    // Chuyển trạng thái từ Working sang Close
+    @Transactional
+    public void closeWorkForJob(){
+        List<JobPosting> workJobs = jobPostingRepository.findByStatus(JobStatus.WORKING);
+        LocalDateTime now = LocalDateTime.now();
+        for(JobPosting jobPosting : workJobs) {
+            if (jobPosting.getShift().getEndTime()!= null && now.isAfter(jobPosting.getShift().getEndTime())) {
+                jobPosting.setStatus(JobStatus.CLOSE);
+                jobPostingRepository.save(jobPosting);
+            }
+        }
+    }
+    // Chuyen trang thai tu Pending sang Rejected neu qua han ma chua dc duyet
+    @Transactional
+    public void autoRejectJobPosting() {
+        List<JobPosting> pendingJobs = jobPostingRepository.findByStatus(JobStatus.PENDING);
+        LocalDateTime now = LocalDateTime.now();
+        for(JobPosting jobPosting : pendingJobs) {
+            if(jobPosting.getDeadLine()!= null && now.isAfter(jobPosting.getDeadLine())) {
+                jobPosting.setStatus(JobStatus.REJECTED);
+                jobPostingRepository.save(jobPosting);
+            }
+        }
+    }
     // Lấy tất cả các tin tuyển dụng của tất cả nhà tuyển dụng
     public List<JobPostingDTO> getAllJobPostings() {
         List<JobPosting> jobPostings = jobPostingRepository.findAll();
@@ -133,11 +176,12 @@ public class JobPostingService {
         return jobPostingRepository.findById(jobPostingId)
                 .orElseThrow(() -> new EntityNotFoundException("JobPosting not found with id: " + jobPostingId));
     }
-    public Map<String, Object> getHomeData(Long recruiterId, Integer month) {
+    public Map<String, Object> getHomeData(Long recruiterId, Integer year,Integer month) {
         List<JobPosting> jobPostings;
 
-        if (month != null) {
-            jobPostings = jobPostingRepository.findByRecruiterIdAndMonth(recruiterId, month);
+        if (year != null && month != null) {
+            // Giả sử bạn có repo method tìm theo recruiterId, năm và tháng
+            jobPostings = jobPostingRepository.findByRecruiterIdAndYearAndMonth(recruiterId, year, month);
         } else {
             jobPostings = jobPostingRepository.findByRecruiterId(recruiterId);
         }
@@ -168,6 +212,31 @@ public class JobPostingService {
         result.put("CLOSE", closed);
         result.put("job", jobs);
 
+        return result;
+    }
+
+    public Map<String, Object> getCandidatesView(Long recruiterId, Integer year, Integer month) {
+        List<JobPosting> jobPostings = jobPostingRepository.findByRecruiterIdAndYearAndMonth(recruiterId, year, month);
+        int candidatesNumber = 0, jobNumber = 0;
+        List<Map<String, Object>> jobs = new ArrayList<>();
+        for (JobPosting job : jobPostings) {
+            if(job.getStatus() != JobStatus.OPEN) { continue; }
+            jobNumber++;
+            candidatesNumber += applicationRepository.countByJobPostingAndStatus(job, ApplicationStatus.PENDING);
+            Map<String, Object> jobInfo = new HashMap<>();
+            jobInfo.put("title", job.getTitle());
+            jobInfo.put("createAt", job.getPostDate());
+            jobInfo.put("updateAt", job.getUpdatedDate());
+            jobInfo.put("endAt", job.getDeadLine());
+            jobInfo.put("numberOfRecruit", job.getNumberOfPositions());
+            jobInfo.put("numberOfApplicants", job.getApplications().size());
+            jobInfo.put("companyAddress", job.getLocation());
+            jobs.add(jobInfo);
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("candidateNumber", candidatesNumber);
+        result.put("jobNumber", jobNumber);
+        result.put("jobs", jobs);
         return result;
     }
 

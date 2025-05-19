@@ -15,4 +15,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     // Bạn có thể thêm các phương thức tùy chỉnh nếu cần
     List<Application> findByJobPostingId(Long jobPostingId);
     List<Application> findByJobPostingIdAndStatus(Long jobId, ApplicationStatus status);
+    int countByJobPostingAndStatus(JobPosting jobPosting, ApplicationStatus status);
+
 }

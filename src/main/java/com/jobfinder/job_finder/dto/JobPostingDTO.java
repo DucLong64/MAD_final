@@ -3,13 +3,17 @@ package com.jobfinder.job_finder.dto;
 import com.jobfinder.job_finder.util.JobStatus;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class JobPostingDTO {
     private Long id;
     private String title;

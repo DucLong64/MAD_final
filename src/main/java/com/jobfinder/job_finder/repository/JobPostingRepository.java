@@ -17,4 +17,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
 
     @Query("SELECT j FROM JobPosting j WHERE j.recruiter.id = :recruiterId AND FUNCTION('MONTH', j.postDate) = :month")
     List<JobPosting> findByRecruiterIdAndMonth(@Param("recruiterId") Long recruiterId, @Param("month") Integer month);
+    // Mới: tìm theo recruiterId, năm và tháng
+    @Query("SELECT j FROM JobPosting j WHERE j.recruiter.id = :recruiterId AND FUNCTION('YEAR', j.postDate) = :year AND FUNCTION('MONTH', j.postDate) = :month")
+    List<JobPosting> findByRecruiterIdAndYearAndMonth(@Param("recruiterId") Long recruiterId, @Param("year") Integer year, @Param("month") Integer month);
+
+    List<JobPosting> findByTitleContainingIgnoreCaseAndStatus(String title, JobStatus status);
 }
