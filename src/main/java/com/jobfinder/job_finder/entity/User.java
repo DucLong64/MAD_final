@@ -1,9 +1,13 @@
 package com.jobfinder.job_finder.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jobfinder.job_finder.util.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -23,6 +27,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Notification> notifications = new ArrayList<>();
 
 }

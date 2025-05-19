@@ -5,6 +5,7 @@ import com.jobfinder.job_finder.dto.ApplicationDTO;
 import com.jobfinder.job_finder.entity.Application;
 import com.jobfinder.job_finder.entity.JobPosting;
 import com.jobfinder.job_finder.entity.JobSeeker;
+import com.jobfinder.job_finder.entity.Recruiter;
 import com.jobfinder.job_finder.repository.ApplicationRepository;
 import com.jobfinder.job_finder.util.ApplicationStatus;
 import com.jobfinder.job_finder.util.JobStatus;
@@ -22,7 +23,8 @@ public class ApplicationService {
     private ApplicationRepository applicationRepository;
     @Autowired
     private ApplicationDTOConverter applicationDTOConverter;
-
+    @Autowired
+    private NotificationService notificationService;
     public Application applyForJob(JobSeeker jobSeeker, JobPosting jobPosting) {
         Optional<Application> existingApplication = applicationRepository.findByJobSeekerAndJobPosting(jobSeeker,jobPosting);
         if (existingApplication.isPresent()) {
@@ -33,7 +35,11 @@ public class ApplicationService {
         application.setJobPosting(jobPosting);
         application.setApplicationDate(LocalDateTime.now());
         application.setStatus(ApplicationStatus.PENDING);
-
+        //Xử lý thông báo đến cho nhà tuyển dụng
+        Recruiter recruiter = (Recruiter) jobPosting.getRecruiter();
+        String title= "Bạn có người ứng tuyển mới";
+        String message="Bạn có người ứng tuyển mới cho công việc "+ jobPosting.getTitle();
+        notificationService.createNotification(recruiter.getId(), title,message,jobPosting.getId());
         return applicationRepository.save(application);
     }
     //Phe duyet application cua ung vien

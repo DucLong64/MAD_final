@@ -9,10 +9,7 @@ import com.jobfinder.job_finder.entity.Application;
 import com.jobfinder.job_finder.entity.JobPosting;
 import com.jobfinder.job_finder.entity.JobSeeker;
 import com.jobfinder.job_finder.entity.User;
-import com.jobfinder.job_finder.service.ApplicationService;
-import com.jobfinder.job_finder.service.JobPostingService;
-import com.jobfinder.job_finder.service.ShiftService;
-import com.jobfinder.job_finder.service.UserService;
+import com.jobfinder.job_finder.service.*;
 import com.jobfinder.job_finder.util.ApplicationStatus;
 import com.jobfinder.job_finder.util.JobStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +37,8 @@ public class RecruiterController {
     private ShiftService shiftService;
     @Autowired
     private JobPostingService jobPostingService;
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/home")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getHomeData(
@@ -101,11 +100,21 @@ public class RecruiterController {
             @RequestParam ApplicationStatus status) {
         try {
             Application updatedApplication = applicationService.updateApplicationStatus(applicationId, status);
+            //Tạo thông báo cho ứng viên
+            JobSeeker jobSeeker = updatedApplication.getJobSeeker();  // Lấy ứng viên
+            JobPosting jobPosting = updatedApplication.getJobPosting();  // Lấy công việc
 
+            // Tạo thông báo cho JobSeeker về kết quả phê duyệt
+            String title ="Đơn ứng tuyển của bạn " + (status == ApplicationStatus.ACCEPTED ? " được chấp nhân" : "bị từ chối");
+            String message = "Đơn ứng tuyển cho công việc " + jobPosting.getTitle() +
+                    (status == ApplicationStatus.ACCEPTED ? " được phê duyệt." : "bị từ chối.");
+            notificationService.createNotification(
+                    jobSeeker.getId(),
+                    title,
+                    message,
+                    jobPosting.getId()
+            );
             if (status == ApplicationStatus.ACCEPTED) {
-                JobSeeker jobSeeker = updatedApplication.getJobSeeker();  // Lấy ứng viên
-                JobPosting jobPosting = updatedApplication.getJobPosting();  // Lấy công việc
-
                 // Tạo hoặc cập nhật Shift cho ứng viên
                 shiftService.createOrUpdateShiftForJobSeeker(jobSeeker, jobPosting);
             }
