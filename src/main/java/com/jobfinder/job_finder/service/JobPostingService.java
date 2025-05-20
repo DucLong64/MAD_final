@@ -37,6 +37,7 @@ public class JobPostingService {
 
     public JobPostingDTO createJobPosting(JobPosting jobPosting) {
         Shift shift = jobPosting.getShift();
+        shift.setName(jobPosting.getTitle());
         jobPosting.setPostDate(java.time.LocalDateTime.now());
         jobPosting.setUpdatedDate(java.time.LocalDateTime.now());
         jobPosting.setStatus(JobStatus.PENDING);
@@ -81,7 +82,7 @@ public class JobPostingService {
                 Shift existingShift = updatedJob.getShift(); // Lấy ca làm hiện tại
                 if (existingShift != null) {
                     // Nếu ca làm có thay đổi, cập nhật các thuộc tính
-                    existingShift.setName(shift.getName()); // Cập nhật tên ca
+                    existingShift.setName(jobPosting.getTitle()); // Cập nhật tên ca
                     existingShift.setStartTime(shift.getStartTime()); // Cập nhật thời gian bắt đầu
                     existingShift.setEndTime(shift.getEndTime()); // Cập nhật thời gian kết thúc
 
