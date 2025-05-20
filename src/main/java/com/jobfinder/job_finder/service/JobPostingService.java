@@ -192,6 +192,7 @@ public class JobPostingService {
             switch (job.getStatus().toString()) {
                 case "OPEN": open++;
                     Map<String, Object> jobInfo = new HashMap<>();
+                    jobInfo.put("jobId", job.getId());
                     jobInfo.put("title", job.getTitle());
                     jobInfo.put("createAt", job.getPostDate());
                     jobInfo.put("updateAt", job.getUpdatedDate());
@@ -224,6 +225,7 @@ public class JobPostingService {
             jobNumber++;
             candidatesNumber += applicationRepository.countByJobPostingAndStatus(job, ApplicationStatus.PENDING);
             Map<String, Object> jobInfo = new HashMap<>();
+            jobInfo.put("jobId", job.getId());
             jobInfo.put("title", job.getTitle());
             jobInfo.put("createAt", job.getPostDate());
             jobInfo.put("updateAt", job.getUpdatedDate());
